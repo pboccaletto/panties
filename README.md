@@ -197,7 +197,8 @@ cd panties-powershell
 
 ## License
 
-MIT
+GNU GENERAL PUBLIC LICENSE
+Version 3
 
 ---
 
