@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+{% block title %}Error #{{ error.id }} - {{ project.name }} - Panties{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="{{ url_for('list_projects') }}">
+      <i class="fas fa-folder mr-1"></i>Projects
+    </a></li>
+    <li><a href="{{ url_for('project_detail', project_id=project.id) }}">{{ project.name }}</a></li>
+    <li class="is-active"><a href="#" aria-current="page">Error #{{ error.id }}</a></li>
+  </ul>
+</nav>
+
+<div class="level mb-5">
+  <div class="level-left">
+    <div class="level-item">
+      <div>
+        <h1 class="title is-2">
+          <span style="font-size: 2rem;">🐛</span>
+          <span class="ml-2">Error #{{ error.id }}</span>
+        </h1>
+        <div class="subtitle is-5">
+          <span class="error-type-badge error-type-{{ error.event_type }} mr-2">
+            {% if error.event_type == 'exception' %}
+              <i class="fas fa-bug mr-1"></i>
+            {% else %}
+              <i class="fas fa-envelope mr-1"></i>
+            {% endif %}
+            {{ error.event_type }}
+          </span>
+          {% if error.level %}
+            <span class="level-badge level-{{ error.level }} mr-2">
+              <i class="fas fa-signal mr-1"></i>
+              {{ error.level }}
+            </span>
+          {% endif %}
+          {% if error.exception_type %}
+            <span class="tag is-danger is-medium">{{ error.exception_type }}</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="level-right">
+    <div class="level-item">
+      <span class="icon-text">
+        <span class="icon has-text-grey">
+          <i class="fas fa-clock"></i>
+        </span>
+        <span>{{ error.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</span>
+      </span>
+    </div>
+  </div>
+</div>
+
+<!-- Message Section -->
+{% if error.message %}
+<div class="box mb-5">
+  <h2 class="title is-4">
+    <i class="fas fa-comment-alt mr-2"></i>
+    Error Message
+  </h2>
+  <div class="notification is-danger is-light">
+    <p class="is-size-5 has-text-weight-semibold">{{ error.message }}</p>
+  </div>
+</div>
+{% endif %}
+
+<!-- Stack Trace - Main Focus -->
+<div class="box mb-5">
+  <div class="level mb-4">
+    <div class="level-left">
+      <div class="level-item">
+        <h2 class="title is-3">
+          <span style="font-size: 2rem;">📚</span>
+          <span class="ml-2">Stack Trace</span>
+        </h2>
+      </div>
+    </div>
+    <div class="level-right">
+      <div class="level-item">
+        <button class="button is-light" onclick="copyStacktrace()">
+          <span class="icon">
+            <i class="fas fa-copy"></i>
+          </span>
+          <span>Copy</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  {% if error.stacktrace %}
+    <div class="stacktrace-container" id="stacktraceContent">
+      <pre>{{ error.stacktrace }}</pre>
+    </div>
+  {% else %}
+    <div class="notification is-warning is-light">
+      <p class="is-size-5">
+        <i class="fas fa-exclamation-triangle mr-2"></i>
+        No stack trace available for this error.
+      </p>
+    </div>
+  {% endif %}
+</div>
+
+<!-- Metadata in Columns -->
+<div class="columns">
+  <!-- Left Column -->
+  <div class="column is-6">
+    <!-- Overview Box -->
+    <div class="box mb-4">
+      <h2 class="title is-5">
+        <i class="fas fa-info-circle mr-2"></i>
+        Overview
+      </h2>
+      <div class="content">
+        <table class="table is-fullwidth">
+          <tbody>
+            <tr>
+              <th style="width: 40%;">
+                <i class="fas fa-fingerprint mr-2"></i>
+                Event ID
+              </th>
+              <td>
+                {% if error.event_id %}
+                  <code>{{ error.event_id }}</code>
+                {% else %}
+                  <span class="has-text-grey">-</span>
+                {% endif %}
+              </td>
+            </tr>
+            <tr>
+              <th>
+                <i class="fas fa-tag mr-2"></i>
+                Event Type
+              </th>
+              <td>
+                <span class="error-type-badge error-type-{{ error.event_type }}">
+                  {{ error.event_type }}
+                </span>
+              </td>
+            </tr>
+            {% if error.level %}
+            <tr>
+              <th>
+                <i class="fas fa-signal mr-2"></i>
+                Level
+              </th>
+              <td>
+                <span class="level-badge level-{{ error.level }}">{{ error.level }}</span>
+              </td>
+            </tr>
+            {% endif %}
+            {% if error.exception_type %}
+            <tr>
+              <th>
+                <i class="fas fa-exclamation-circle mr-2"></i>
+                Exception Type
+              </th>
+              <td>
+                <span class="tag is-danger is-light">{{ error.exception_type }}</span>
+              </td>
+            </tr>
+            {% endif %}
+            <tr>
+              <th>
+                <i class="fas fa-calendar-plus mr-2"></i>
+                Created At
+              </th>
+              <td>{{ error.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+            </tr>
+            <tr>
+              <th>
+                <i class="fas fa-clock mr-2"></i>
+                Timestamp
+              </th>
+              <td>{{ error.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tags Box -->
+    <div class="box mb-4">
+      <h2 class="title is-5">
+        <i class="fas fa-tags mr-2"></i>
+        Tags
+      </h2>
+      {% set tags = error.tags() %}
+      {% if tags %}
+        <div class="tags">
+          {% for k, v in tags.items() %}
+            <span class="tag is-medium is-info is-light">
+              <strong>{{ k }}:</strong>&nbsp;{{ v }}
+            </span>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="has-text-grey-light">
+          <i class="fas fa-minus-circle mr-2"></i>
+          No tags attached to this error.
+        </p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Right Column -->
+  <div class="column is-6">
+    <!-- Extra Data Box -->
+    <div class="box mb-4">
+      <h2 class="title is-5">
+        <i class="fas fa-database mr-2"></i>
+        Extra Data
+      </h2>
+      {% set extra = error.extra() %}
+      {% if extra %}
+        <div class="code-block">
+          <pre>{{ extra | tojson(indent=2) }}</pre>
+        </div>
+      {% else %}
+        <p class="has-text-grey-light">
+          <i class="fas fa-minus-circle mr-2"></i>
+          No extra data available.
+        </p>
+      {% endif %}
+    </div>
+
+    <!-- Raw Payload Box (Collapsible) -->
+    <div class="box">
+      <h2 class="title is-5">
+        <i class="fas fa-code mr-2"></i>
+        Raw Payload
+      </h2>
+      {% set raw = error.raw() %}
+      {% if raw %}
+        <details>
+          <summary class="button is-light is-fullwidth mb-3">
+            <span class="icon">
+              <i class="fas fa-chevron-down"></i>
+            </span>
+            <span>Show Raw JSON</span>
+          </summary>
+          <div class="code-block">
+            <pre>{{ raw | tojson(indent=2) }}</pre>
+          </div>
+        </details>
+      {% else %}
+        <p class="has-text-grey-light">
+          <i class="fas fa-minus-circle mr-2"></i>
+          No raw payload stored.
+        </p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+  function copyStacktrace() {
+    const stacktrace = document.getElementById('stacktraceContent');
+    if (stacktrace) {
+      const text = stacktrace.innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        // Visual feedback
+        const btn = event.target.closest('button');
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<span class="icon"><i class="fas fa-check"></i></span><span>Copied!</span>';
+        btn.classList.add('is-success');
+
+        setTimeout(() => {
+          btn.innerHTML = originalHTML;
+          btn.classList.remove('is-success');
+        }, 2000);
+      }).catch(err => {
+        console.error('Failed to copy:', err);
+      });
+    }
+  }
+</script>
+{% endblock %}

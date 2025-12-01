@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}Panties{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Bulma CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --panties-primary: #ff69b4;
+      --panties-secondary: #ff1493;
+      --panties-light: #ffb6d9;
+      --panties-dark: #c71585;
+    }
+
+    .navbar.is-panties {
+      background: linear-gradient(135deg, #ff69b4 0%, #ff1493 100%);
+    }
+
+    .hero.is-panties {
+      background: linear-gradient(135deg, #ff69b4 0%, #ff1493 100%);
+    }
+
+    .button.is-panties {
+      background: linear-gradient(135deg, #ff69b4 0%, #ff1493 100%);
+      color: white;
+      border: none;
+    }
+
+    .button.is-panties:hover {
+      background: linear-gradient(135deg, #ff1493 0%, #c71585 100%);
+      color: white;
+    }
+
+    .stacktrace-container {
+      background-color: #282c34;
+      color: #abb2bf;
+      border-radius: 6px;
+      padding: 1.5rem;
+      overflow-x: auto;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .stacktrace-container pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      color: inherit;
+      background: none;
+    }
+
+    .error-type-badge {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .error-type-exception {
+      background-color: #ff1493;
+      color: white;
+    }
+
+    .error-type-message {
+      background-color: #ff69b4;
+      color: white;
+    }
+
+    .level-badge {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    .level-error {
+      background-color: #e74c3c;
+      color: white;
+    }
+
+    .level-warning {
+      background-color: #f39c12;
+      color: white;
+    }
+
+    .level-info {
+      background-color: #3498db;
+      color: white;
+    }
+
+    .code-block {
+      background-color: #f5f5f5;
+      border: 1px solid #dbdbdb;
+      border-radius: 4px;
+      padding: 0.75rem;
+      font-family: monospace;
+      font-size: 0.875rem;
+      overflow-x: auto;
+    }
+
+    .stats-card {
+      border-left: 4px solid #ff69b4;
+    }
+
+    .panties-icon {
+      font-size: 1.5rem;
+    }
+
+    .title + .subtitle {
+      margin-top: 15px !important;
+    }
+
+    .footer-custom {
+      background-color: #f8f9fa;
+      padding: 2rem 0;
+      margin-top: 4rem;
+      border-top: 1px solid #e9ecef;
+    }
+  </style>
+</head>
+<body>
+<nav class="navbar is-panties" role="navigation" aria-label="main navigation">
+  <div class="container">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="{{ url_for('list_projects') }}">
+        <span class="panties-icon mr-2">🩲</span>
+        <strong style="font-size: 1.25rem; color: white;">Panties</strong>
+      </a>
+    </div>
+
+    <div class="navbar-menu">
+      <div class="navbar-start">
+        <a class="navbar-item" href="{{ url_for('list_projects') }}" style="color: white;">
+          <i class="fas fa-folder mr-2"></i>
+          Projects
+        </a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<section class="section">
+  <div class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="mb-5">
+          {% for category, message in messages %}
+            <div class="notification {{ category }}">
+              <button class="delete"></button>
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </div>
+</section>
+
+<footer class="footer-custom">
+  <div class="container">
+    <div class="content has-text-centered">
+      <p>
+        <span class="panties-icon">🩲</span>
+        <strong>Panties</strong> - Error tracking made simple
+      </p>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Auto-close notifications
+  document.addEventListener('DOMContentLoaded', () => {
+    (document.querySelectorAll('.notification .delete') || []).forEach(($delete) => {
+      const $notification = $delete.parentNode;
+      $delete.addEventListener('click', () => {
+        $notification.parentNode.removeChild($notification);
+      });
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+{% block title %}{{ project.name }} - Panties{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="{{ url_for('list_projects') }}">
+      <i class="fas fa-folder mr-1"></i>Projects
+    </a></li>
+    <li class="is-active"><a href="#" aria-current="page">{{ project.name }}</a></li>
+  </ul>
+</nav>
+
+<div class="level mb-5">
+  <div class="level-left">
+    <div class="level-item">
+      <div>
+        <h1 class="title is-2">
+          <span style="font-size: 2rem;">🩲</span>
+          <span class="ml-2">{{ project.name }}</span>
+        </h1>
+        <p class="subtitle is-5">Project ID: <span class="tag is-light">{{ project.id }}</span></p>
+      </div>
+    </div>
+  </div>
+  <div class="level-right">
+    <div class="level-item">
+      <form method="post" action="{{ url_for('delete_project', project_id=project.id) }}" onsubmit="return confirm('Are you sure you want to delete this project? All {{ errors|length }} error(s) will be deleted too.');">
+        <button class="button is-danger" type="submit">
+          <span class="icon">
+            <i class="fas fa-trash"></i>
+          </span>
+          <span>Delete Project</span>
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="columns mb-5">
+  <div class="column">
+    <div class="box stats-card">
+      <div class="level">
+        <div class="level-left">
+          <div>
+            <p class="heading">Total Errors</p>
+            <p class="title is-3">{{ errors|length }}</p>
+          </div>
+        </div>
+        <div class="level-right">
+          <span style="font-size: 3rem;">🐛</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="column">
+    <div class="box">
+      <p class="heading">
+        <i class="fas fa-key mr-2"></i>
+        API Key
+      </p>
+      <div class="code-block">
+        <code style="font-size: 0.85rem; word-break: break-all;">{{ project.api_key }}</code>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if project.description %}
+  <div class="notification is-light mb-5">
+    <p class="is-size-5">
+      <i class="fas fa-info-circle mr-2"></i>
+      {{ project.description }}
+    </p>
+  </div>
+{% endif %}
+
+<div class="level mb-4">
+  <div class="level-left">
+    <div class="level-item">
+      <h2 class="title is-4">
+        <i class="fas fa-exclamation-triangle mr-2"></i>
+        Error Events
+      </h2>
+    </div>
+  </div>
+  <div class="level-right">
+    <div class="level-item">
+      <div class="field has-addons">
+        <div class="control has-icons-left">
+          <input class="input" type="text" placeholder="Search errors..." id="searchInput">
+          <span class="icon is-small is-left">
+            <i class="fas fa-search"></i>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if errors %}
+  <div class="box">
+    <div class="table-container">
+      <table class="table is-fullwidth is-hoverable is-striped" id="errorsTable">
+        <thead>
+          <tr>
+            <th><i class="fas fa-hashtag mr-2"></i>ID</th>
+            <th><i class="fas fa-fingerprint mr-2"></i>Event ID</th>
+            <th><i class="fas fa-tag mr-2"></i>Type</th>
+            <th><i class="fas fa-exclamation-circle mr-2"></i>Exception</th>
+            <th><i class="fas fa-comment mr-2"></i>Message</th>
+            <th><i class="fas fa-clock mr-2"></i>Timestamp</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for e in errors %}
+          <tr>
+            <td class="has-text-weight-bold">#{{ e.id }}</td>
+            <td>
+              {% if e.event_id %}
+                <code style="font-size: 0.75rem;">{{ e.event_id[:8] }}...</code>
+              {% else %}
+                <span class="has-text-grey">-</span>
+              {% endif %}
+            </td>
+            <td>
+              <span class="error-type-badge error-type-{{ e.event_type }}">
+                {% if e.event_type == 'exception' %}
+                  <i class="fas fa-bug mr-1"></i>
+                {% else %}
+                  <i class="fas fa-envelope mr-1"></i>
+                {% endif %}
+                {{ e.event_type }}
+              </span>
+              {% if e.level %}
+                <span class="level-badge level-{{ e.level }}">{{ e.level }}</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if e.exception_type %}
+                <span class="tag is-danger is-light">{{ e.exception_type }}</span>
+              {% else %}
+                <span class="has-text-grey">-</span>
+              {% endif %}
+            </td>
+            <td style="max-width: 300px;">
+              <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                {{ (e.message or "No message")[:80] }}
+                {% if e.message and e.message|length > 80 %}…{% endif %}
+              </div>
+            </td>
+            <td>
+              <span class="icon-text">
+                <span class="icon">
+                  <i class="fas fa-calendar-alt"></i>
+                </span>
+                <span>{{ e.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</span>
+              </span>
+            </td>
+            <td>
+              <a class="button is-panties is-small" href="{{ url_for('error_detail', project_id=project.id, error_id=e.id) }}">
+                <span class="icon">
+                  <i class="fas fa-search"></i>
+                </span>
+                <span>Details</span>
+              </a>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% else %}
+  <div class="notification is-success is-light">
+    <p class="is-size-5">
+      <i class="fas fa-check-circle mr-2"></i>
+      No errors recorded for this project yet. Looking good!
+    </p>
+  </div>
+{% endif %}
+
+<script>
+  // Simple search filter
+  document.getElementById('searchInput')?.addEventListener('input', function(e) {
+    const searchText = e.target.value.toLowerCase();
+    const rows = document.querySelectorAll('#errorsTable tbody tr');
+
+    rows.forEach(row => {
+      const text = row.textContent.toLowerCase();
+      row.style.display = text.includes(searchText) ? '' : 'none';
+    });
+  });
+</script>
+{% endblock %}
