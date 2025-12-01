@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}{% if object %}Edit{% else %}Create{% endif %} Project - Panties{% endblock %}
+
+{% block content %}
+<div class="box">
+  <h1 class="title is-2">
+    <span style="font-size: 2rem;">🩲</span>
+    <span class="ml-2">{% if object %}Edit{% else %}Create{% endif %} Project</span>
+  </h1>
+  <p class="subtitle is-5">{% if object %}Update{% else %}Create a new{% endif %} error tracking project</p>
+
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <div class="field is-grouped">
+      <div class="control">
+        <button type="submit" class="button is-panties">
+          <span class="icon"><i class="fas fa-save"></i></span>
+          <span>Save</span>
+        </button>
+      </div>
+      <div class="control">
+        <a class="button is-light" href="{% if object %}{% url 'core:project_detail' object.pk %}{% else %}{% url 'core:project_list' %}{% endif %}">Cancel</a>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

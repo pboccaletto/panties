@@ -70,8 +70,8 @@ def main():
 
     # Initialize the client
     panties.init(
-        api_token="a8b6f8600ddb1037ec99cafd571feaa08c897ea17d2ae806386140b615327bb9",
-        endpoint="http://localhost:5000/api/events",
+        api_token="d67326dba59fb6e0c26fab57210d73f14be34ded7a4ffe68f1ecb2f21d3b892d",
+        endpoint="http://localhost:8000/api/events/",
         environment="dev",
         service_name="my-service-test",
     )

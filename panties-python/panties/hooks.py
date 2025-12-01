@@ -31,6 +31,11 @@ def install_global_excepthook() -> None:
         client = get_client()
         if client is not None:
             client.capture_exception(exc_type, exc_value, tb)
+            # Flush the queue to ensure the event is sent before exit
+            try:
+                client.transport.flush(timeout=2.0)
+            except Exception:
+                pass
 
         if _original_sys_excepthook is not None:
             _original_sys_excepthook(exc_type, exc_value, tb)

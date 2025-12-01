@@ -1,0 +1,31 @@
+{
+  "name": "@panties/client",
+  "version": "0.1.0",
+  "description": "🩲 JavaScript/TypeScript error tracking client for Panties - Track your errors with style!",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "rollup -c",
+    "test": "node test.js",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "error-tracking",
+    "monitoring",
+    "logging",
+    "panties",
+    "observability"
+  ],
+  "author": "Panties Team",
+  "license": "MIT",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "devDependencies": {
+    "@rollup/plugin-typescript": "^11.1.5",
+    "tslib": "^2.6.2",
+    "typescript": "^5.3.3"
+  }
+}

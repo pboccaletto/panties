@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Remove Member - Panties{% endblock %}
+
+{% block content %}
+<div class="box">
+  <h1 class="title is-2">Remove Member</h1>
+  <p class="subtitle">{{ project.name }}</p>
+
+  <div class="notification is-warning is-light">
+    <p>Are you sure you want to remove <strong>{{ object.user.email }}</strong> from this project?</p>
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+    <div class="field is-grouped">
+      <div class="control">
+        <button type="submit" class="button is-danger">
+          <span class="icon"><i class="fas fa-user-minus"></i></span>
+          <span>Yes, Remove</span>
+        </button>
+      </div>
+      <div class="control">
+        <a class="button is-light" href="{% url 'core:project_detail' project.pk %}">Cancel</a>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

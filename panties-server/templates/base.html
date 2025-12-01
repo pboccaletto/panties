@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -124,12 +125,13 @@
       border-top: 1px solid #e9ecef;
     }
   </style>
+  {% block extra_css %}{% endblock %}
 </head>
 <body>
 <nav class="navbar is-panties" role="navigation" aria-label="main navigation">
   <div class="container">
     <div class="navbar-brand">
-      <a class="navbar-item" href="{{ url_for('list_projects') }}">
+      <a class="navbar-item" href="{% url 'core:project_list' %}">
         <span class="panties-icon mr-2">🩲</span>
         <strong style="font-size: 1.25rem; color: white;">Panties</strong>
       </a>
@@ -137,10 +139,47 @@
 
     <div class="navbar-menu">
       <div class="navbar-start">
-        <a class="navbar-item" href="{{ url_for('list_projects') }}" style="color: white;">
+        <a class="navbar-item" href="{% url 'core:project_list' %}" style="color: white;">
           <i class="fas fa-folder mr-2"></i>
           Projects
         </a>
+      </div>
+
+      <div class="navbar-end">
+        {% if user.is_authenticated %}
+          <div class="navbar-item has-dropdown is-hoverable">
+            <a class="navbar-link" style="color: white;">
+              <i class="fas fa-user mr-2"></i>
+              {{ user.email }}
+            </a>
+            <div class="navbar-dropdown">
+              <a class="navbar-item" href="{% url 'account_email' %}">
+                <i class="fas fa-envelope mr-2"></i>
+                Email Settings
+              </a>
+              <a class="navbar-item" href="{% url 'account_change_password' %}">
+                <i class="fas fa-key mr-2"></i>
+                Change Password
+              </a>
+              <hr class="navbar-divider">
+              <a class="navbar-item" href="{% url 'account_logout' %}">
+                <i class="fas fa-sign-out-alt mr-2"></i>
+                Logout
+              </a>
+            </div>
+          </div>
+        {% else %}
+          <div class="navbar-item">
+            <div class="buttons">
+              <a class="button is-light" href="{% url 'account_login' %}">
+                <strong>Login</strong>
+              </a>
+              <a class="button is-light" href="{% url 'account_signup' %}">
+                <strong>Sign Up</strong>
+              </a>
+            </div>
+          </div>
+        {% endif %}
       </div>
     </div>
   </div>
@@ -148,18 +187,16 @@
 
 <section class="section">
   <div class="container">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        <div class="mb-5">
-          {% for category, message in messages %}
-            <div class="notification {{ category }}">
-              <button class="delete"></button>
-              {{ message }}
-            </div>
-          {% endfor %}
-        </div>
-      {% endif %}
-    {% endwith %}
+    {% if messages %}
+      <div class="mb-5">
+        {% for message in messages %}
+          <div class="notification {{ message.tags }}">
+            <button class="delete"></button>
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
 
     {% block content %}{% endblock %}
   </div>
@@ -187,5 +224,6 @@
     });
   });
 </script>
+{% block extra_js %}{% endblock %}
 </body>
 </html>

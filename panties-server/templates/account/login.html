@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load account %}
+
+{% block title %}{% trans "Sign In" %} - Panties{% endblock %}
+
+{% block content %}
+<div class="columns is-centered">
+  <div class="column is-5-tablet is-4-desktop">
+    <div class="box" style="margin-top: 3rem;">
+      <div class="has-text-centered mb-5">
+        <span style="font-size: 3rem;">🩲</span>
+        <h1 class="title is-3 mt-3">{% trans "Sign In" %}</h1>
+        <p class="subtitle is-6 has-text-grey">Welcome back to Panties</p>
+      </div>
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="notification {{ message.tags }} mb-4">
+            <button class="delete"></button>
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      <form method="post" action="{% url 'account_login' %}">
+        {% csrf_token %}
+
+        <div class="field">
+          <label class="label">
+            <i class="fas fa-envelope mr-2"></i>
+            {% trans "Email" %}
+          </label>
+          <div class="control has-icons-left">
+            <input class="input" type="email" name="login" placeholder="your@email.com" required autofocus
+                   value="{{ form.login.value|default:'' }}">
+            <span class="icon is-small is-left">
+              <i class="fas fa-envelope"></i>
+            </span>
+          </div>
+          {% if form.login.errors %}
+            <p class="help is-danger">{{ form.login.errors|join:", " }}</p>
+          {% endif %}
+        </div>
+
+        <div class="field">
+          <label class="label">
+            <i class="fas fa-lock mr-2"></i>
+            {% trans "Password" %}
+          </label>
+          <div class="control has-icons-left">
+            <input class="input" type="password" name="password" placeholder="••••••••" required>
+            <span class="icon is-small is-left">
+              <i class="fas fa-lock"></i>
+            </span>
+          </div>
+          {% if form.password.errors %}
+            <p class="help is-danger">{{ form.password.errors|join:", " }}</p>
+          {% endif %}
+        </div>
+
+        <div class="field">
+          <label class="checkbox">
+            <input type="checkbox" name="remember">
+            {% trans "Remember me" %}
+          </label>
+        </div>
+
+        {% if form.non_field_errors %}
+          <div class="notification is-danger is-light">
+            {{ form.non_field_errors|join:", " }}
+          </div>
+        {% endif %}
+
+        {% if redirect_field_value %}
+          <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+        {% endif %}
+
+        <div class="field">
+          <div class="control">
+            <button class="button is-panties is-fullwidth is-medium" type="submit">
+              <span class="icon">
+                <i class="fas fa-sign-in-alt"></i>
+              </span>
+              <span>{% trans "Sign In" %}</span>
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <hr>
+
+      <div class="has-text-centered">
+        <p class="mb-3">
+          <a href="{% url 'account_reset_password' %}">{% trans "Forgot Password?" %}</a>
+        </p>
+        <p>
+          {% trans "Don't have an account?" %}
+          <a href="{% url 'account_signup' %}"><strong>{% trans "Sign Up" %}</strong></a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

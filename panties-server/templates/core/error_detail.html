@@ -1,13 +1,14 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}Error #{{ error.id }} - {{ project.name }} - Panties{% endblock %}
 
 {% block content %}
 <nav class="breadcrumb" aria-label="breadcrumbs">
   <ul>
-    <li><a href="{{ url_for('list_projects') }}">
+    <li><a href="{% url 'core:project_list' %}">
       <i class="fas fa-folder mr-1"></i>Projects
     </a></li>
-    <li><a href="{{ url_for('project_detail', project_id=project.id) }}">{{ project.name }}</a></li>
+    <li><a href="{% url 'core:project_detail' project.pk %}">{{ project.name }}</a></li>
     <li class="is-active"><a href="#" aria-current="page">Error #{{ error.id }}</a></li>
   </ul>
 </nav>
@@ -44,12 +45,12 @@
   </div>
   <div class="level-right">
     <div class="level-item">
-      <span class="icon-text">
-        <span class="icon has-text-grey">
-          <i class="fas fa-clock"></i>
-        </span>
-        <span>{{ error.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</span>
-      </span>
+      {% if can_edit %}
+        <a class="button is-danger" href="{% url 'core:error_delete' project.pk error.pk %}">
+          <span class="icon"><i class="fas fa-trash"></i></span>
+          <span>Delete</span>
+        </a>
+      {% endif %}
     </div>
   </div>
 </div>
@@ -165,18 +166,33 @@
             {% endif %}
             <tr>
               <th>
-                <i class="fas fa-calendar-plus mr-2"></i>
-                Created At
-              </th>
-              <td>{{ error.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
-            </tr>
-            <tr>
-              <th>
                 <i class="fas fa-clock mr-2"></i>
                 Timestamp
               </th>
-              <td>{{ error.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+              <td>{{ error.timestamp|date:"Y-m-d H:i:s" }}</td>
             </tr>
+            {% if error.environment %}
+            <tr>
+              <th>
+                <i class="fas fa-cogs mr-2"></i>
+                Environment
+              </th>
+              <td>
+                <span class="tag is-info">{{ error.environment }}</span>
+              </td>
+            </tr>
+            {% endif %}
+            {% if error.service_name %}
+            <tr>
+              <th>
+                <i class="fas fa-server mr-2"></i>
+                Service
+              </th>
+              <td>
+                <span class="tag is-info">{{ error.service_name }}</span>
+              </td>
+            </tr>
+            {% endif %}
           </tbody>
         </table>
       </div>
@@ -188,12 +204,11 @@
         <i class="fas fa-tags mr-2"></i>
         Tags
       </h2>
-      {% set tags = error.tags() %}
-      {% if tags %}
+      {% if error.tags %}
         <div class="tags">
-          {% for k, v in tags.items() %}
+          {% for key, value in error.tags.items %}
             <span class="tag is-medium is-info is-light">
-              <strong>{{ k }}:</strong>&nbsp;{{ v }}
+              <strong>{{ key }}:</strong>&nbsp;{{ value }}
             </span>
           {% endfor %}
         </div>
@@ -214,10 +229,9 @@
         <i class="fas fa-database mr-2"></i>
         Extra Data
       </h2>
-      {% set extra = error.extra() %}
-      {% if extra %}
+      {% if error.extra %}
         <div class="code-block">
-          <pre>{{ extra | tojson(indent=2) }}</pre>
+          <pre>{{ error.extra|pprint }}</pre>
         </div>
       {% else %}
         <p class="has-text-grey-light">
@@ -227,33 +241,45 @@
       {% endif %}
     </div>
 
-    <!-- Raw Payload Box (Collapsible) -->
-    <div class="box">
+    <!-- Context Info Box -->
+    <div class="box mb-4">
       <h2 class="title is-5">
-        <i class="fas fa-code mr-2"></i>
-        Raw Payload
+        <i class="fas fa-info-circle mr-2"></i>
+        Context Information
       </h2>
-      {% set raw = error.raw() %}
-      {% if raw %}
-        <details>
-          <summary class="button is-light is-fullwidth mb-3">
-            <span class="icon">
-              <i class="fas fa-chevron-down"></i>
-            </span>
-            <span>Show Raw JSON</span>
-          </summary>
-          <div class="code-block">
-            <pre>{{ raw | tojson(indent=2) }}</pre>
-          </div>
-        </details>
-      {% else %}
-        <p class="has-text-grey-light">
-          <i class="fas fa-minus-circle mr-2"></i>
-          No raw payload stored.
-        </p>
-      {% endif %}
+      <table class="table is-fullwidth is-narrow">
+        <tbody>
+          <tr>
+            <th style="width: 40%;">
+              <i class="fas fa-folder mr-2"></i>
+              Project
+            </th>
+            <td>
+              <a href="{% url 'core:project_detail' project.pk %}">{{ project.name }}</a>
+            </td>
+          </tr>
+          <tr>
+            <th>
+              <i class="fas fa-hashtag mr-2"></i>
+              Error ID
+            </th>
+            <td><strong>#{{ error.id }}</strong></td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
+</div>
+
+<div class="buttons">
+  <a class="button is-panties" href="{% url 'core:error_list' project.pk %}">
+    <span class="icon"><i class="fas fa-arrow-left"></i></span>
+    <span>Back to All Errors</span>
+  </a>
+  <a class="button is-info" href="{% url 'core:project_detail' project.pk %}">
+    <span class="icon"><i class="fas fa-folder"></i></span>
+    <span>Back to Project</span>
+  </a>
 </div>
 
 <script>

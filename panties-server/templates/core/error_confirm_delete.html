@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Delete Error - Panties{% endblock %}
+
+{% block content %}
+<div class="box">
+  <h1 class="title is-2">Delete Error Event</h1>
+  <p class="subtitle">Are you sure?</p>
+
+  <div class="notification is-warning is-light">
+    <p>This will permanently delete error event #{{ object.id }}.</p>
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+    <div class="field is-grouped">
+      <div class="control">
+        <button type="submit" class="button is-danger">
+          <span class="icon"><i class="fas fa-trash"></i></span>
+          <span>Yes, Delete</span>
+        </button>
+      </div>
+      <div class="control">
+        <a class="button is-light" href="{% url 'core:error_detail' project.pk object.pk %}">Cancel</a>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

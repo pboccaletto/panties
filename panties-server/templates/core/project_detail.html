@@ -1,0 +1,561 @@
+{% extends "base.html" %}
+{% block title %}{{ project.name }} - Panties{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="{% url 'core:project_list' %}">
+      <i class="fas fa-folder mr-1"></i>Projects
+    </a></li>
+    <li class="is-active"><a href="#" aria-current="page">{{ project.name }}</a></li>
+  </ul>
+</nav>
+
+<div class="level mb-5">
+  <div class="level-left">
+    <div class="level-item">
+      <div>
+        <h1 class="title is-2">
+          <span style="font-size: 2rem;">🩲</span>
+          <span class="ml-2">{{ project.name }}</span>
+        </h1>
+        <p class="subtitle is-5">
+          Project ID: <span class="tag is-light">{{ project.id }}</span>
+          {% if user_role %}
+            | Role: <span class="tag is-info">{{ user_role }}</span>
+          {% endif %}
+        </p>
+      </div>
+    </div>
+  </div>
+  <div class="level-right">
+    <div class="level-item">
+      <div class="buttons">
+        {% if can_edit %}
+          <a class="button is-info" href="{% url 'core:project_update' project.pk %}">
+            <span class="icon"><i class="fas fa-edit"></i></span>
+            <span>Edit</span>
+          </a>
+        {% endif %}
+        {% if can_delete %}
+          <a class="button is-danger" href="{% url 'core:project_delete' project.pk %}">
+            <span class="icon"><i class="fas fa-trash"></i></span>
+            <span>Delete</span>
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if project.description %}
+  <div class="notification is-light mb-5">
+    <p class="is-size-5">
+      <i class="fas fa-info-circle mr-2"></i>
+      {{ project.description }}
+    </p>
+  </div>
+{% endif %}
+
+<!-- Tabs Navigation -->
+<div class="tabs is-boxed is-medium">
+  <ul>
+    <li class="is-active" data-tab="dashboard">
+      <a>
+        <span class="icon is-small"><i class="fas fa-chart-line"></i></span>
+        <span>Dashboard</span>
+      </a>
+    </li>
+    <li data-tab="errors">
+      <a>
+        <span class="icon is-small"><i class="fas fa-exclamation-triangle"></i></span>
+        <span>Errors</span>
+        <span class="tag is-danger ml-2">{{ error_count }}</span>
+      </a>
+    </li>
+    <li data-tab="apikey">
+      <a>
+        <span class="icon is-small"><i class="fas fa-key"></i></span>
+        <span>API Key</span>
+      </a>
+    </li>
+    {% if can_edit %}
+    <li data-tab="members">
+      <a>
+        <span class="icon is-small"><i class="fas fa-users"></i></span>
+        <span>Members</span>
+      </a>
+    </li>
+    {% endif %}
+  </ul>
+</div>
+
+<!-- Dashboard Tab -->
+<div id="dashboard-tab" class="tab-content">
+  <div class="columns">
+    <div class="column is-4">
+      <div class="box has-text-centered">
+        <p class="heading">Total Errors</p>
+        <p class="title is-1 has-text-danger">{{ error_count }}</p>
+        <p class="subtitle is-6">All time</p>
+      </div>
+    </div>
+    <div class="column is-4">
+      <div class="box has-text-centered">
+        <p class="heading">Last 24 Hours</p>
+        <p class="title is-1 has-text-warning">{{ errors_today }}</p>
+        <p class="subtitle is-6">Recent activity</p>
+      </div>
+    </div>
+    <div class="column is-4">
+      <div class="box has-text-centered">
+        <p class="heading">Last 7 Days</p>
+        <p class="title is-1 has-text-info">{{ errors_week }}</p>
+        <p class="subtitle is-6">Weekly trend</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="box">
+    <h3 class="title is-5">
+      <i class="fas fa-chart-bar mr-2"></i>
+      Errors Per Day (Last 7 Days)
+    </h3>
+    <div id="errors-chart" style="min-height: 300px;">
+      <canvas id="errorsPerDayChart"></canvas>
+    </div>
+  </div>
+
+  <div class="box">
+    <h3 class="title is-5">
+      <i class="fas fa-list mr-2"></i>
+      Recent Errors
+    </h3>
+    {% if recent_errors %}
+      <div class="table-container">
+        <table class="table is-fullwidth is-hoverable is-striped">
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Exception</th>
+              <th>Message</th>
+              <th>Timestamp</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for error in recent_errors %}
+            <tr>
+              <td>
+                <span class="error-type-badge error-type-{{ error.event_type }}">
+                  {% if error.event_type == 'exception' %}
+                    <i class="fas fa-bug mr-1"></i>
+                  {% else %}
+                    <i class="fas fa-envelope mr-1"></i>
+                  {% endif %}
+                  {{ error.event_type }}
+                </span>
+                {% if error.level %}
+                  <span class="level-badge level-{{ error.level }}">{{ error.level }}</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if error.exception_type %}
+                  <span class="tag is-danger is-light">{{ error.exception_type }}</span>
+                {% else %}
+                  <span class="has-text-grey">-</span>
+                {% endif %}
+              </td>
+              <td style="max-width: 400px;">
+                <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                  {{ error.message|default:"No message"|truncatechars:80 }}
+                </div>
+              </td>
+              <td>
+                <span class="icon-text">
+                  <span class="icon"><i class="fas fa-calendar-alt"></i></span>
+                  <span>{{ error.timestamp|date:"Y-m-d H:i:s" }}</span>
+                </span>
+              </td>
+              <td>
+                <a class="button is-panties is-small" href="{% url 'core:error_detail' project.pk error.pk %}">
+                  <span class="icon"><i class="fas fa-search"></i></span>
+                  <span>Details</span>
+                </a>
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="notification is-success is-light">
+        <p><i class="fas fa-check-circle mr-2"></i>No errors recorded yet. Looking good!</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Errors Tab -->
+<div id="errors-tab" class="tab-content" style="display: none;">
+  <div class="level mb-4">
+    <div class="level-left">
+      <div class="level-item">
+        <h2 class="title is-4">
+          <i class="fas fa-exclamation-triangle mr-2"></i>
+          All Error Events
+        </h2>
+      </div>
+    </div>
+    <div class="level-right">
+      <div class="level-item">
+        <a class="button is-info" href="{% url 'core:error_list' project.pk %}">
+          <span class="icon"><i class="fas fa-list"></i></span>
+          <span>View Full List</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  {% if recent_errors %}
+    <div class="box">
+      <div class="table-container">
+        <table class="table is-fullwidth is-hoverable is-striped">
+          <thead>
+            <tr>
+              <th><i class="fas fa-hashtag mr-2"></i>ID</th>
+              <th><i class="fas fa-tag mr-2"></i>Type</th>
+              <th><i class="fas fa-exclamation-circle mr-2"></i>Exception</th>
+              <th><i class="fas fa-comment mr-2"></i>Message</th>
+              <th><i class="fas fa-clock mr-2"></i>Timestamp</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for error in recent_errors %}
+            <tr>
+              <td class="has-text-weight-bold">#{{ error.id }}</td>
+              <td>
+                <span class="error-type-badge error-type-{{ error.event_type }}">
+                  {% if error.event_type == 'exception' %}
+                    <i class="fas fa-bug mr-1"></i>
+                  {% else %}
+                    <i class="fas fa-envelope mr-1"></i>
+                  {% endif %}
+                  {{ error.event_type }}
+                </span>
+                {% if error.level %}
+                  <span class="level-badge level-{{ error.level }}">{{ error.level }}</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if error.exception_type %}
+                  <span class="tag is-danger is-light">{{ error.exception_type }}</span>
+                {% else %}
+                  <span class="has-text-grey">-</span>
+                {% endif %}
+              </td>
+              <td style="max-width: 300px;">
+                <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                  {{ error.message|default:"No message"|truncatechars:80 }}
+                </div>
+              </td>
+              <td>
+                <span class="icon-text">
+                  <span class="icon"><i class="fas fa-calendar-alt"></i></span>
+                  <span>{{ error.timestamp|date:"Y-m-d H:i:s" }}</span>
+                </span>
+              </td>
+              <td>
+                <a class="button is-panties is-small" href="{% url 'core:error_detail' project.pk error.pk %}">
+                  <span class="icon"><i class="fas fa-search"></i></span>
+                  <span>Details</span>
+                </a>
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {% else %}
+    <div class="notification is-success is-light">
+      <p class="is-size-5">
+        <i class="fas fa-check-circle mr-2"></i>
+        No errors recorded for this project yet. Looking good!
+      </p>
+    </div>
+  {% endif %}
+</div>
+
+<!-- API Key Tab -->
+<div id="apikey-tab" class="tab-content" style="display: none;">
+  <div class="box">
+    <h2 class="title is-4">
+      <i class="fas fa-key mr-2"></i>
+      API Key
+    </h2>
+    <p class="subtitle is-6">Use this key to authenticate your client libraries</p>
+
+    <div class="notification is-info is-light">
+      <p>
+        <i class="fas fa-info-circle mr-2"></i>
+        <strong>Important:</strong> Keep this API key secure. Anyone with this key can send error events to your project.
+      </p>
+    </div>
+
+    <div class="field">
+      <label class="label">Current API Key</label>
+      <div class="control">
+        <div class="box" style="background-color: #f5f5f5;">
+          <code id="apiKeyDisplay" style="font-size: 0.9rem; word-break: break-all; user-select: all;">{{ project.api_key }}</code>
+        </div>
+      </div>
+    </div>
+
+    <div class="buttons">
+      <button class="button is-info" onclick="copyApiKey()">
+        <span class="icon"><i class="fas fa-copy"></i></span>
+        <span>Copy to Clipboard</span>
+      </button>
+      {% if can_edit %}
+      <button class="button is-warning" onclick="if(confirm('Are you sure you want to regenerate the API key? The old key will stop working immediately.')) { document.getElementById('regenerateForm').submit(); }">
+        <span class="icon"><i class="fas fa-sync-alt"></i></span>
+        <span>Regenerate Key</span>
+      </button>
+      <form id="regenerateForm" method="post" action="{% url 'core:regenerate_api_key' project.pk %}" style="display: none;">
+        {% csrf_token %}
+      </form>
+      {% endif %}
+    </div>
+
+    <hr>
+
+    <h3 class="title is-5">Usage Example</h3>
+
+    <div class="tabs is-toggle is-small">
+      <ul>
+        <li class="is-active" data-lang="python">
+          <a><span class="icon is-small"><i class="fab fa-python"></i></span><span>Python</span></a>
+        </li>
+        <li data-lang="javascript">
+          <a><span class="icon is-small"><i class="fab fa-js"></i></span><span>JavaScript</span></a>
+        </li>
+        <li data-lang="powershell">
+          <a><span class="icon is-small"><i class="fas fa-terminal"></i></span><span>PowerShell</span></a>
+        </li>
+      </ul>
+    </div>
+
+    <div id="python-example" class="code-example">
+      <pre class="code-block">import panties
+
+panties.init(
+    api_token="{{ project.api_key }}",
+    endpoint="{{ request.scheme }}://{{ request.get_host }}/api/events/",
+    environment="production",
+    service_name="my-app"
+)
+
+# Errors are now automatically captured!
+raise ValueError("Oops!")</pre>
+    </div>
+
+    <div id="javascript-example" class="code-example" style="display: none;">
+      <pre class="code-block">import * as Panties from '@panties/client';
+
+Panties.init({
+  apiToken: '{{ project.api_key }}',
+  endpoint: '{{ request.scheme }}://{{ request.get_host }}/api/events/',
+  environment: 'production',
+  serviceName: 'my-web-app'
+});
+
+// Errors are now automatically captured!
+throw new Error('Oops!');</pre>
+    </div>
+
+    <div id="powershell-example" class="code-example" style="display: none;">
+      <pre class="code-block">Initialize-Panties `
+    -ApiToken "{{ project.api_key }}" `
+    -Endpoint "{{ request.scheme }}://{{ request.get_host }}/api/events/" `
+    -ServiceName "my-powershell-app"
+
+# Capture errors
+try { 1/0 } catch { Send-PantiesException -ErrorRecord $_ }</pre>
+    </div>
+  </div>
+</div>
+
+<!-- Members Tab -->
+{% if can_edit %}
+<div id="members-tab" class="tab-content" style="display: none;">
+  <div class="box">
+    <h2 class="title is-4">
+      <i class="fas fa-users mr-2"></i>
+      Project Members
+    </h2>
+    <div class="subtitle is-6">Manage who has access to this project</div>
+
+    <table class="table is-fullwidth">
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Role</th>
+          <th>Invited By</th>
+          <th>Added</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>{{ project.owner.email }}</strong></td>
+          <td><span class="tag is-primary">Owner</span></td>
+          <td>-</td>
+          <td>{{ project.created_at|date:"Y-m-d" }}</td>
+          <td>-</td>
+        </tr>
+        {% for member in members %}
+        <tr>
+          <td>{{ member.user.email }}</td>
+          <td><span class="tag is-info">{{ member.get_role_display }}</span></td>
+          <td>{{ member.invited_by.email|default:"-" }}</td>
+          <td>{{ member.created_at|date:"Y-m-d" }}</td>
+          <td>
+            <div class="buttons are-small">
+              <a class="button is-warning" href="{% url 'core:member_update' project.pk member.pk %}">
+                <span class="icon"><i class="fas fa-edit"></i></span>
+              </a>
+              <a class="button is-danger" href="{% url 'core:member_remove' project.pk member.pk %}">
+                <span class="icon"><i class="fas fa-trash"></i></span>
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" class="has-text-centered has-text-grey">No additional members</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <a class="button is-panties" href="{% url 'core:member_add' project.pk %}">
+      <span class="icon"><i class="fas fa-plus"></i></span>
+      <span>Add Member</span>
+    </a>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+  // Tab switching functionality
+  document.addEventListener('DOMContentLoaded', () => {
+    const tabs = document.querySelectorAll('.tabs li');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const targetTab = tab.getAttribute('data-tab');
+
+        // Remove active class from all tabs
+        tabs.forEach(t => t.classList.remove('is-active'));
+
+        // Add active class to clicked tab
+        tab.classList.add('is-active');
+
+        // Hide all tab contents
+        tabContents.forEach(content => {
+          content.style.display = 'none';
+        });
+
+        // Show target tab content
+        const targetContent = document.getElementById(targetTab + '-tab');
+        if (targetContent) {
+          targetContent.style.display = 'block';
+        }
+      });
+    });
+
+    // Create chart for errors per day
+    const ctx = document.getElementById('errorsPerDayChart');
+    if (ctx) {
+      const chartData = {{ errors_per_day_data|safe }};
+
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: chartData.labels,
+          datasets: [{
+            label: 'Errors',
+            data: chartData.values,
+            backgroundColor: 'rgba(255, 20, 147, 0.6)',
+            borderColor: 'rgba(255, 20, 147, 1)',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                precision: 0
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Language example tabs in API Key section
+    const langTabs = document.querySelectorAll('[data-lang]');
+    langTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const lang = tab.getAttribute('data-lang');
+
+        // Update active tab
+        langTabs.forEach(t => t.classList.remove('is-active'));
+        tab.classList.add('is-active');
+
+        // Show corresponding example
+        document.querySelectorAll('.code-example').forEach(ex => {
+          ex.style.display = 'none';
+        });
+        const example = document.getElementById(lang + '-example');
+        if (example) {
+          example.style.display = 'block';
+        }
+      });
+    });
+  });
+
+  // Copy API key to clipboard
+  function copyApiKey() {
+    const apiKey = document.getElementById('apiKeyDisplay').textContent;
+    navigator.clipboard.writeText(apiKey).then(() => {
+      // Show feedback
+      const btn = event.target.closest('button');
+      const originalHTML = btn.innerHTML;
+      btn.innerHTML = '<span class="icon"><i class="fas fa-check"></i></span><span>Copied!</span>';
+      btn.classList.add('is-success');
+
+      setTimeout(() => {
+        btn.innerHTML = originalHTML;
+        btn.classList.remove('is-success');
+      }, 2000);
+    }).catch(err => {
+      alert('Failed to copy API key. Please select and copy manually.');
+    });
+  }
+</script>
+{% endblock %}

@@ -5,6 +5,8 @@ A beautiful, lightweight error tracking system with clients for multiple languag
 ## Features
 
 - 🎨 **Beautiful Pink UI** - Eye-catching gradient design with Bulma CSS
+- 🔐 **Django Authentication** - Email-based authentication with django-allauth
+- 👥 **Multi-User Projects** - Role-based permissions (owner, admin, member, viewer)
 - 🚀 **Fast & Lightweight** - Minimal overhead, async event sending
 - 📊 **Rich Stack Traces** - Detailed error information front and center
 - 🔑 **Multi-Project Support** - Manage multiple applications
@@ -13,7 +15,23 @@ A beautiful, lightweight error tracking system with clients for multiple languag
 
 ## Quick Start
 
-### Server
+### Django Server (Recommended)
+
+```bash
+cd panties-server
+uv venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+uv pip install -r requirements.txt
+.venv/bin/python manage.py migrate
+.venv/bin/python manage.py createsuperuser
+.venv/bin/python manage.py runserver
+```
+
+Visit `http://localhost:8000` to see your beautiful error dashboard!
+
+See [panties-server/README.md](panties-server/README.md) for detailed server documentation.
+
+### Flask Server (Legacy)
 
 ```bash
 cd server

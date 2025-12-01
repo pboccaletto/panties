@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Errors - {{ project.name }} - Panties{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="{% url 'core:project_list' %}"><i class="fas fa-folder mr-1"></i>Projects</a></li>
+    <li><a href="{% url 'core:project_detail' project.pk %}">{{ project.name }}</a></li>
+    <li class="is-active"><a href="#" aria-current="page">All Errors</a></li>
+  </ul>
+</nav>
+
+<h1 class="title is-2">
+  <span style="font-size: 2rem;">🐛</span>
+  <span class="ml-2">All Errors</span>
+</h1>
+<p class="subtitle is-5">{{ project.name }}</p>
+
+{% if errors %}
+  <div class="box">
+    <div class="table-container">
+      <table class="table is-fullwidth is-hoverable is-striped">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Type</th>
+            <th>Exception</th>
+            <th>Message</th>
+            <th>Timestamp</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for error in errors %}
+          <tr>
+            <td>#{{ error.id }}</td>
+            <td><span class="error-type-badge error-type-{{ error.event_type }}">{{ error.event_type }}</span></td>
+            <td>{% if error.exception_type %}<span class="tag is-danger is-light">{{ error.exception_type }}</span>{% else %}-{% endif %}</td>
+            <td>{{ error.message|default:"No message"|truncatechars:60 }}</td>
+            <td>{{ error.timestamp|date:"Y-m-d H:i:s" }}</td>
+            <td>
+              <a class="button is-panties is-small" href="{% url 'core:error_detail' project.pk error.pk %}">
+                <span class="icon"><i class="fas fa-search"></i></span>
+                <span>Details</span>
+              </a>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {% if is_paginated %}
+  <nav class="pagination" role="navigation" aria-label="pagination">
+    {% if page_obj.has_previous %}
+      <a class="pagination-previous" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+    {% endif %}
+    {% if page_obj.has_next %}
+      <a class="pagination-next" href="?page={{ page_obj.next_page_number }}">Next page</a>
+    {% endif %}
+    <ul class="pagination-list">
+      <li><span class="pagination-ellipsis">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+    </ul>
+  </nav>
+  {% endif %}
+{% else %}
+  <div class="notification is-success is-light">
+    <p><i class="fas fa-check-circle mr-2"></i>No errors recorded yet. Looking good!</p>
+  </div>
+{% endif %}
+{% endblock %}

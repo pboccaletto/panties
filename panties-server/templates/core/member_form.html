@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}{% if object %}Edit Member{% else %}Add Member{% endif %} - Panties{% endblock %}
+
+{% block content %}
+<div class="box">
+  <h1 class="title is-2">
+    <span style="font-size: 2rem;">👥</span>
+    <span class="ml-2">{% if object %}Edit Member{% else %}Add Member{% endif %}</span>
+  </h1>
+  <p class="subtitle is-5">{{ project.name }}</p>
+
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <div class="field is-grouped">
+      <div class="control">
+        <button type="submit" class="button is-panties">
+          <span class="icon"><i class="fas fa-save"></i></span>
+          <span>Save</span>
+        </button>
+      </div>
+      <div class="control">
+        <a class="button is-light" href="{% url 'core:project_detail' project.pk %}">Cancel</a>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

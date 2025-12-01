@@ -87,3 +87,10 @@ class HttpTransport:
             # Droppa l'evento silenziosamente per ora
             # (Puoi aggiungere logging/metriche)
             pass
+
+    def flush(self, timeout: float = 2.0) -> None:
+        """
+        Wait for all queued events to be sent.
+        This should be called before program exit to ensure events are sent.
+        """
+        self._queue.join()  # Wait for all items to be processed
