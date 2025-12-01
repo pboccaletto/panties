@@ -15,7 +15,11 @@ A beautiful, lightweight error tracking system with clients for multiple languag
 
 ## Quick Start
 
-### Django Server (Recommended)
+[ Searching for secrets ? ! probably you may find some... but dev and throw ones ... ]
+I promise I will refactor the repo... soon :) 
+
+
+### Django Server
 
 ```bash
 cd panties-server
